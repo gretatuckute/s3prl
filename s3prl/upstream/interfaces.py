@@ -124,27 +124,6 @@ class UpstreamBase(nn.Module, metaclass=initHook):
 
             result["_hidden_states_info"], result["hidden_states"] = zip(*hook_hiddens)
 
-            # GT flatten
-            # flat = []
-            # for hs in result["hidden_states"]:
-            #     if isinstance(hs, torch.Tensor) and hs.ndim == 1 and all(isinstance(x, torch.Tensor) for x in hs):
-            #         flat.extend(list(hs))  # Unwrap the Tensor([layer1, layer2, ...])
-            #     elif isinstance(hs, list):
-            #         flat.extend(hs)
-            #     else:
-            #         flat.append(hs)
-            #
-            # # 🔥 Assign the flattened version
-            # result["hidden_states"] = flat
-            # result["last_hidden_state"] = flat[-1]
-            #
-            # # These are now based on the flattened list
-            # for layer_id, hidden_state in enumerate(flat):
-            #     result[f"hidden_state_{layer_id}"] = hidden_state
-            #
-            # print(f"[DEBUG] Flattened hidden_states: {len(result['hidden_states'])} layers")
-
-
             result["last_hidden_state"] = result["hidden_states"][-1]
 
             for layer_id, hidden_state in enumerate(result["hidden_states"]):
@@ -238,32 +217,6 @@ class Featurizer(nn.Module):
             feature = feature[self.layer_selection]
 
         return feature # for ass, a list of length 13 with 3D tensors
-
-    # def _select_feature(self, features):
-    #     feature = features.get(self.feature_selection)
-    #
-    #     if isinstance(feature, dict):
-    #         feature = list(feature.values())
-    #
-    #     if isinstance(feature, (list, tuple)) and len(feature) == 1:
-    #         feature = feature[0]
-    #
-    #     if isinstance(feature, (list, tuple)) and isinstance(self.layer_selection, int):
-    #         feature = feature[self.layer_selection]
-    #
-    #     # ✅ Add this flattening logic here
-    #     if isinstance(feature, list):
-    #         flat = []
-    #         for f in feature:
-    #             if isinstance(f, torch.Tensor) and f.ndim == 1 and all(isinstance(x, torch.Tensor) for x in f):
-    #                 flat.extend(list(f))
-    #             elif isinstance(f, list):
-    #                 flat.extend(f)
-    #             else:
-    #                 flat.append(f)
-    #         feature = flat
-    #
-    #     return feature
 
     def _weighted_sum(self, feature):
         print(f'Layer num: {self.layer_num}')

@@ -79,7 +79,7 @@ def get_downstream_args():
 
     # options
     parser.add_argument('--seed', default=1337, type=int)
-    parser.add_argument('--device', default='cuda', help='model.to(device)')
+    parser.add_argument('--device', default='cpu', help='model.to(device)')
     parser.add_argument('--cache_dir', help='The cache directory for pretrained model downloading')
     parser.add_argument('--verbose', action='store_true', help='Print model infomation')
     parser.add_argument('--disable_cudnn', action='store_true', help='Disable CUDNN')
@@ -182,10 +182,9 @@ def main():
     if args.hub == "huggingface":
         args.from_hf_hub = True
         # Setup auth
-        hf_user = os.environ.get("HF_USERNAME")
-        hf_password = os.environ.get("HF_PASSWORD")
+        hf_user = os.environ.get('HF_USERNAME')
+        hf_password = os.environ.get('HF_PASSWORD')
         huggingface_token = HfApi().login(username=hf_user, password=hf_password)
-        HfFolder.save_token(huggingface_token)
         print(f"Logged into Hugging Face Hub with user: {hf_user}")
     
     # Save command
@@ -216,4 +215,35 @@ def main():
 
 
 if __name__ == '__main__':
+
+    # TASK=cola
+    # UPSTREAM=AuriStream100M_librilight_dev
+    # OUTDIR=result/${TASK}/${UPSTREAM}
+    #
+    # python run_downstream.py \
+    #   -m train \
+    #   -p ${OUTDIR} \
+    #   -u ${UPSTREAM} \
+    #   -d speechglue \
+    #   -c downstream/speechglue/config_${TASK}.yaml
+
+    import sys
+
+    TASK = "cola"
+    UPSTREAM = "AuriStream100M_librilight_dev"
+    OUTDIR = f"result/{TASK}/{UPSTREAM}"
+
+    sys.argv = [
+        "run_downstream.py",  # This can be any placeholder script name
+        "-m", "train",
+        # "--hub", "huggingface",
+        "-p", OUTDIR,
+        "-u", UPSTREAM,
+        "-d", "speechglue",
+        "-c", f"downstream/speechglue/config_{TASK}.yaml"
+    ]
+    # Call the main function with the arguments
     main()
+
+
+    # main()

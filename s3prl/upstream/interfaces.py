@@ -123,6 +123,28 @@ class UpstreamBase(nn.Module, metaclass=initHook):
                 hook_hiddens = self.hook_postprocess(hook_hiddens)
 
             result["_hidden_states_info"], result["hidden_states"] = zip(*hook_hiddens)
+
+            # GT flatten
+            # flat = []
+            # for hs in result["hidden_states"]:
+            #     if isinstance(hs, torch.Tensor) and hs.ndim == 1 and all(isinstance(x, torch.Tensor) for x in hs):
+            #         flat.extend(list(hs))  # Unwrap the Tensor([layer1, layer2, ...])
+            #     elif isinstance(hs, list):
+            #         flat.extend(hs)
+            #     else:
+            #         flat.append(hs)
+            #
+            # # 🔥 Assign the flattened version
+            # result["hidden_states"] = flat
+            # result["last_hidden_state"] = flat[-1]
+            #
+            # # These are now based on the flattened list
+            # for layer_id, hidden_state in enumerate(flat):
+            #     result[f"hidden_state_{layer_id}"] = hidden_state
+            #
+            # print(f"[DEBUG] Flattened hidden_states: {len(result['hidden_states'])} layers")
+
+
             result["last_hidden_state"] = result["hidden_states"][-1]
 
             for layer_id, hidden_state in enumerate(result["hidden_states"]):
@@ -145,7 +167,7 @@ class Featurizer(nn.Module):
         self.name = "Featurizer"
 
         upstream.eval()
-        paired_wavs = [torch.randn(SAMPLE_RATE).to(upstream_device)]
+        paired_wavs = [torch.randn(SAMPLE_RATE).to(upstream_device)] # list of tensor (1D tensor)
         with torch.no_grad():
             paired_features = upstream(paired_wavs)
 
@@ -170,7 +192,10 @@ class Featurizer(nn.Module):
         self.normalize = normalize
 
         feature = self._select_feature(paired_features)
+        print(f'\n\nLen Feature after selecting: {len(feature)}\n')
+
         if isinstance(feature, (list, tuple)):
+            # print(f'Feature is a list or tuple: {feature}')
             self.layer_num = len(feature)
             show(
                 f"[{self.name}] - Take a list of {self.layer_num} features and weighted sum them.",
@@ -212,9 +237,47 @@ class Featurizer(nn.Module):
         if isinstance(feature, (list, tuple)) and isinstance(self.layer_selection, int):
             feature = feature[self.layer_selection]
 
-        return feature
+        return feature # for ass, a list of length 13 with 3D tensors
+
+    # def _select_feature(self, features):
+    #     feature = features.get(self.feature_selection)
+    #
+    #     if isinstance(feature, dict):
+    #         feature = list(feature.values())
+    #
+    #     if isinstance(feature, (list, tuple)) and len(feature) == 1:
+    #         feature = feature[0]
+    #
+    #     if isinstance(feature, (list, tuple)) and isinstance(self.layer_selection, int):
+    #         feature = feature[self.layer_selection]
+    #
+    #     # ✅ Add this flattening logic here
+    #     if isinstance(feature, list):
+    #         flat = []
+    #         for f in feature:
+    #             if isinstance(f, torch.Tensor) and f.ndim == 1 and all(isinstance(x, torch.Tensor) for x in f):
+    #                 flat.extend(list(f))
+    #             elif isinstance(f, list):
+    #                 flat.extend(f)
+    #             else:
+    #                 flat.append(f)
+    #         feature = flat
+    #
+    #     return feature
 
     def _weighted_sum(self, feature):
+        print(f'Layer num: {self.layer_num}')
+        # print(feature)
+        print(f'Len of feature: {len(feature)}')
+        print(f'Feature[0] len: {len(feature[0])}')
+        print(f'Feature[1] len: {len(feature[1])}')
+        print(f'Feature[2] len: {len(feature[2])}')
+        print(f'Feature[3] len: {len(feature[3])}')
+        print(f"Feature[0].shape: {np.shape(feature[0])}")
+        print(f"Feature[1].shape: {np.shape(feature[1])}")
+        print(f"Feature[2].shape: {np.shape(feature[2])}")
+        print(f"Feature[3].shape: {np.shape(feature[3])}")
+
         assert self.layer_num == len(feature), (
             "If you run into this error, there is a great chance"
             " you are finetuning the upstream with wav2vec2's transformer blocks"
@@ -232,7 +295,7 @@ class Featurizer(nn.Module):
             " following options: --upstream_trainable --upstream_feature_selection last_hidden_state."
             " Or: -f -s last_hidden_state"
         )
-        stacked_feature = torch.stack(feature, dim=0)
+        stacked_feature = torch.stack(feature, dim=0) # (13, 1, 188, 768)
 
         if self.normalize:
             stacked_feature = F.layer_norm(
@@ -245,7 +308,7 @@ class Featurizer(nn.Module):
         weighted_feature = (norm_weights.unsqueeze(-1) * stacked_feature).sum(dim=0)
         weighted_feature = weighted_feature.view(*origin_shape)
 
-        return weighted_feature
+        return weighted_feature # (1, 188, 768)
 
     def tolist(self, paired_wavs: List[Tensor], paired_feature: Tensor):
         assert paired_feature.dim() == 3, "(batch_size, max_seq_len, feat_dim)"

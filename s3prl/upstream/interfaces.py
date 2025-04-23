@@ -10,7 +10,7 @@ from torch import Tensor
 from s3prl.utility.helper import show
 
 SAMPLE_RATE = 16000
-TOLERABLE_SEQLEN_DIFF = 5
+TOLERABLE_SEQLEN_DIFF = 20
 
 
 class Hook:
@@ -171,7 +171,7 @@ class Featurizer(nn.Module):
         self.normalize = normalize
 
         feature = self._select_feature(paired_features)
-        print(f'\n\nLen Feature after selecting: {len(feature)}\n')
+        # print(f'\n\nLen Feature after selecting: {len(feature)}\n')
 
         if isinstance(feature, (list, tuple)):
             # print(f'Feature is a list or tuple: {feature}')
@@ -220,16 +220,15 @@ class Featurizer(nn.Module):
 
     def _weighted_sum(self, feature):
         print(f'Layer num: {self.layer_num}')
-        # print(feature)
         print(f'Len of feature: {len(feature)}')
         print(f'Feature[0] len: {len(feature[0])}')
-        print(f'Feature[1] len: {len(feature[1])}')
-        print(f'Feature[2] len: {len(feature[2])}')
-        print(f'Feature[3] len: {len(feature[3])}')
+        # print(f'Feature[1] len: {len(feature[1])}')
+        # print(f'Feature[2] len: {len(feature[2])}')
+        # print(f'Feature[3] len: {len(feature[3])}')
         print(f"Feature[0].shape: {np.shape(feature[0])}")
-        print(f"Feature[1].shape: {np.shape(feature[1])}")
-        print(f"Feature[2].shape: {np.shape(feature[2])}")
-        print(f"Feature[3].shape: {np.shape(feature[3])}")
+        # print(f"Feature[1].shape: {np.shape(feature[1])}")
+        # print(f"Feature[2].shape: {np.shape(feature[2])}")
+        # print(f"Feature[3].shape: {np.shape(feature[3])}")
 
         assert self.layer_num == len(feature), (
             "If you run into this error, there is a great chance"
@@ -265,6 +264,14 @@ class Featurizer(nn.Module):
 
     def tolist(self, paired_wavs: List[Tensor], paired_feature: Tensor):
         assert paired_feature.dim() == 3, "(batch_size, max_seq_len, feat_dim)"
+
+        print(f'Len paired_wavs: {len(paired_wavs)}')
+        print(f'Len paired_feature: {len(paired_feature)}')
+        print(f'Len paired_feature[0]: {len(paired_feature[0])}')
+        print(f'Len paired_feature[1]: {len(paired_feature[1])}')
+        print(f'Len wav[0]: {len(paired_wavs[0])}')
+        print(f'Length diff: {abs(len(paired_feature) - len(paired_wavs))}')
+
         feature_len = [round(len(wav) / self.downsample_rate) for wav in paired_wavs]
         length_diff = abs(
             paired_feature.size(1)

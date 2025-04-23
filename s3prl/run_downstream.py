@@ -227,23 +227,21 @@ if __name__ == '__main__':
     #   -d speechglue \
     #   -c downstream/speechglue/config_${TASK}.yaml
 
-    import sys
-
-    TASK = "cola"
-    UPSTREAM = "AuriStream100M_librilight_dev"
-    OUTDIR = f"result/{TASK}/{UPSTREAM}"
-
-    sys.argv = [
-        "run_downstream.py",  # This can be any placeholder script name
-        "-m", "train",
-        # "--hub", "huggingface",
-        "-p", OUTDIR,
-        "-u", UPSTREAM,
-        "-d", "speechglue",
-        "-c", f"downstream/speechglue/config_{TASK}.yaml"
-    ]
-    # Call the main function with the arguments
+    # import sys
+    #
+    # TASK = "cola"
+    # UPSTREAM = "AuriStream100M_librilight_dev"
+    # OUTDIR = f"result/{TASK}/{UPSTREAM}"
+    #
+    # sys.argv = [
+    #     "run_downstream.py",  # This can be any placeholder script name
+    #     "-m", "train",
+    #     # "--hub", "huggingface",
+    #     "-p", OUTDIR,
+    #     "-u", UPSTREAM,
+    #     "-d", "speechglue",
+    #     "-c", f"downstream/speechglue/config_{TASK}.yaml"
+    # ]
+    # # Call the main function with the arguments
     main()
 
-
-    # main()

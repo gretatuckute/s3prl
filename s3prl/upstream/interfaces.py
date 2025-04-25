@@ -267,9 +267,9 @@ class Featurizer(nn.Module):
 
         print(f'Len paired_wavs: {len(paired_wavs)}')
         print(f'Len paired_feature: {len(paired_feature)}')
-        print(f'Len paired_feature[0]: {len(paired_feature[0])}')
-        print(f'Len paired_feature[1]: {len(paired_feature[1])}')
-        print(f'Len wav[0]: {len(paired_wavs[0])}')
+        # print(f'Len paired_feature[0]: {len(paired_feature[0])}')
+        # print(f'Len paired_feature[1]: {len(paired_feature[1])}')
+        # print(f'Len wav[0]: {len(paired_wavs[0])}')
         print(f'Length diff: {abs(len(paired_feature) - len(paired_wavs))}')
 
         feature_len = [round(len(wav) / self.downsample_rate) for wav in paired_wavs]

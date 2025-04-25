@@ -43,7 +43,7 @@ from s3prl.upstream.hf_speechssl_no_pretrained_weights.hubconf import *
 from s3prl.upstream.embedding.hubconf import *
 
 from s3prl.upstream.AuriStream100M_librilight_dev.hubconf import *
-
+from s3prl.upstream.AuriStream100M_RoPE_librilight.hubconf import *
 
 def options(only_registered_ckpt: bool = False):
     all_options = []
